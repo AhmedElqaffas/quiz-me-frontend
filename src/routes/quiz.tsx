@@ -5,11 +5,29 @@ import CardActions from '../components/flash_card/CardActions'
 import FlashCard from '../components/flash_card/FlashCard'
 import NextPrevButtons from '../components/flash_card/NextPrevButtons'
 
-export const Route = createFileRoute('/quiz')({ component: App })
-function App() {
+export const Route = createFileRoute('/quiz')({ component: Quiz, 
+    loader: async () => {
+        // just for testing, fetch 10 questions from OpenTDB
+        const res = await fetch('https://opentdb.com/api.php?amount=10');
+        const results = (await res.json()).results;
+        return {results};
+    }
+})
+
+function Quiz() {
   const [isFlipped, setFlipped] = useState(false)
-  const question = 'What is the capital of France?'
-  const answer = 'Paris'
+  const [questionIdx, setQuestionIdx] = useState(0)
+  const data = Route.useLoaderData();
+
+  function goToPrevQuestion(): void {
+    setFlipped(false)
+    return setQuestionIdx(Math.max(0, questionIdx - 1))
+  }
+
+  function goToNextQuestion(): void {
+    setFlipped(false)
+    return setQuestionIdx(Math.min(data.results.length - 1, questionIdx + 1))
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center gap-4">
@@ -20,11 +38,12 @@ function App() {
           <FlashCard
             isFlipped={isFlipped}
             onFlip={() => setFlipped(!isFlipped)}
-            card={{ question, answer }}
+            card={{ question: data.results[questionIdx].question, answer: data.results[questionIdx].correct_answer }}
           />
 
           {/* Next/Prev Row */}
-          <NextPrevButtons />
+          <NextPrevButtons questionIdx={questionIdx} questionCount={data.results.length}
+          onPrev={goToPrevQuestion} onNext={goToNextQuestion} />
         </div>
 
         {/* 3. The side actions are outside that column, so they stays to the right */}
