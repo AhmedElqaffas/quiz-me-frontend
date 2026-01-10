@@ -1,23 +1,27 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react'
 
 import CardActions from '../components/flash_card/CardActions'
 import FlashCard from '../components/flash_card/FlashCard'
 import NextPrevButtons from '../components/flash_card/NextPrevButtons'
 
-export const Route = createFileRoute('/quiz')({ component: Quiz, 
-    loader: async () => {
-        // just for testing, fetch 10 questions from OpenTDB
-        const res = await fetch('https://opentdb.com/api.php?amount=10');
-        const results = (await res.json()).results;
-        return {results};
-    }
-})
+export const Route = createFileRoute('/quiz')({ component: Quiz})
 
 function Quiz() {
   const [isFlipped, setFlipped] = useState(false)
   const [questionIdx, setQuestionIdx] = useState(0)
-  const data = Route.useLoaderData();
+
+  const { data, isPending } = useQuery({
+    queryKey: ['questions'],
+    queryFn: async () => {
+        // just for testing, fetch 10 questions from OpenTDB
+        const res = await fetch('https://opentdb.com/api.php?amount=10');
+        const results = (await res.json()).results;
+        return {results};
+    },
+    refetchOnWindowFocus: false,
+  });
 
   function goToPrevQuestion(): void {
     setFlipped(false)
@@ -26,8 +30,11 @@ function Quiz() {
 
   function goToNextQuestion(): void {
     setFlipped(false)
-    return setQuestionIdx(prev => Math.min(data.results.length - 1, prev + 1))
+    return setQuestionIdx(prev => Math.min(data?.results.length - 1, prev + 1))
   }
+
+  if (isPending) return <span>Loading...</span>
+
 
   return (
     <div className="min-h-screen flex items-center justify-center gap-4">
@@ -38,11 +45,11 @@ function Quiz() {
           <FlashCard
             isFlipped={isFlipped}
             onFlip={() => setFlipped(!isFlipped)}
-            card={{ question: data.results[questionIdx].question, answer: data.results[questionIdx].correct_answer }}
+            card={{ question: data?.results[questionIdx].question, answer: data?.results[questionIdx].correct_answer }}
           />
 
           {/* Next/Prev Row */}
-          <NextPrevButtons questionIdx={questionIdx} questionCount={data.results.length}
+          <NextPrevButtons questionIdx={questionIdx} questionCount={data?.results.length}
           onPrev={goToPrevQuestion} onNext={goToNextQuestion} />
         </div>
 
