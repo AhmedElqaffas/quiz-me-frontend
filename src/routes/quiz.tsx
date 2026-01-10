@@ -21,12 +21,12 @@ function Quiz() {
 
   function goToPrevQuestion(): void {
     setFlipped(false)
-    return setQuestionIdx(Math.max(0, questionIdx - 1))
+    return setQuestionIdx(prev => Math.max(0, prev - 1))
   }
 
   function goToNextQuestion(): void {
     setFlipped(false)
-    return setQuestionIdx(Math.min(data.results.length - 1, questionIdx + 1))
+    return setQuestionIdx(prev => Math.min(data.results.length - 1, prev + 1))
   }
 
   return (

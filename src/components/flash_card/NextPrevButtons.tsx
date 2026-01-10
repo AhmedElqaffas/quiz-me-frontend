@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 interface NextPrevButtonsProps {
   questionIdx: number
   questionCount: number
@@ -11,6 +13,25 @@ export default function NextPrevButtons({
   onPrev,
   onNext,
 }: NextPrevButtonsProps) {
+  useEffect(() => {
+    // Allow left/right arrow keys to navigate questions
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+        onPrev()
+      } else if (event.key === 'ArrowRight') {
+        onNext()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    // CLEANUP: Remove the listener when the component is destroyed
+    // This avoids multiple listeners being added over time and leading to 1 click skipping multiple questions
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   return (
     <div className="flex w-full max-w-sm items-center">
       <button
