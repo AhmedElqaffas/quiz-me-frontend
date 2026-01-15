@@ -5,6 +5,7 @@
   --color-background: light-dark(#ffffff, #121212);
   --color-foreground: light-dark(#1a1a1a, #f5f5f5);
   --color-primary: light-dark(#3b82f6, #5C3E94);
+  --color-background-secondary: light-dark(#c7ccd1, #1e1e1e);
 }
 
 @layer base {
